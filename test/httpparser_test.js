@@ -1,5 +1,5 @@
 //var HTTPParser = process.binding('http_parser').HTTPParser
-var HTTPParser = require('./httpparser.js').HTTPParser;
+var HTTPParser = require('../httpparser.js').HTTPParser;
 
 var n = 1;
 // var n = 40000;
