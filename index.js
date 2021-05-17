@@ -12,6 +12,7 @@ const toAddr = { host: 'localhost', port: 5232, tls: false };
 
 const replaceHostEnabled = false;
 const writeFileEnabled = true;
+const forceXmlBeautifyEnabled = true;
 
 function getLogFileName() {
 	function pad2(n) {
@@ -46,7 +47,7 @@ function printMessage(info) {
 		}
 		info.info.headers = headerMap;
 	}
-	if (info.info.method) {
+	if (info.info.method !== undefined && info.info.method !== null) {
 		info.info.method = HTTPParser.methods[info.info.method];
 	}
 	print('info: ' + JSON.stringify(info.info, null, 2));
@@ -68,7 +69,7 @@ function printMessage(info) {
 			// nothing
 		}
 
-		if (info.info.headers['content-type'].includes('text/xml')) {
+		if (info.info.headers['content-type'].includes('text/xml') || forceXmlBeautifyEnabled) {
 			print('body: ' + xmlBeautify(body.toString('utf8')));
 		} else if (info.info.headers['content-type'].includes('text/json')) {
 			print('body: ' + JSON.stringify(body.toString('utf8'), null, 2));
