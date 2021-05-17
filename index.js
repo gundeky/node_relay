@@ -40,43 +40,60 @@ function print(str) {
 }
 
 function printMessage(info) {
-	if (info.info.headers) {
-		const headerMap = {};
-		for (let i=0; i<info.info.headers.length; i+=2) {
-			headerMap[info.info.headers[i].toLowerCase()] = info.info.headers[i+1];
-		}
-		info.info.headers = headerMap;
-	}
+	let totalStr = '';
+	let contentEncoding = '';
+	let contentType = '';
 	if (info.info.method !== undefined && info.info.method !== null) {
-		info.info.method = HTTPParser.methods[info.info.method];
+		totalStr = `${HTTPParser.methods[info.info.method]} ${info.info.url} HTTP/${info.info.versionMajor}.${info.info.versionMinor}\n`;
 	}
-	print('info: ' + JSON.stringify(info.info, null, 2));
+	else if (info.info.statusCode !== undefined && info.info.statusCode !== null) {
+		totalStr = `HTTP/${info.info.versionMajor}.${info.info.versionMinor} ${info.info.statusCode} ${info.info.statusMessage}\n`;
+	}
+
+	if (info.info.headers) {
+		let headerStr = '';
+		for (let i=0; i<info.info.headers.length; i+=2) {
+			headerStr += `${info.info.headers[i]}: ${info.info.headers[i+1]}\n`;
+			if (info.info.headers[i].toLowerCase() === 'content-encoding') {
+				contentEncoding = info.info.headers[i+1];
+			} else if (info.info.headers[i].toLowerCase() === 'content-type') {
+				contentType = info.info.headers[i+1];
+			}
+		}
+		totalStr += headerStr;
+	}
+
+	totalStr += '\n';
 
 	if (info.buffers.length > 0) {
 		let body = Buffer.concat(info.buffers);
 
-		if (info.info.headers['content-encoding'] === 'br') {
+		// const contentEncoding = info.info.headers['content-encoding'] || '';
+		if (contentEncoding === 'br') {
 			body = zlib.brotliDecompressSync(body);
-		} else if (info.info.headers['content-encoding'] === 'gzip') {
+		} else if (contentEncoding === 'gzip') {
 			body = zlib.gunzipSync(body);
-		} else if (info.info.headers['content-encoding'] === 'compress') {
+		} else if (contentEncoding === 'compress') {
 			body = zlib.unzipSync(body);
-		} else if (info.info.headers['content-encoding'] === 'deflate') {
+		} else if (contentEncoding === 'deflate') {
 			body = zlib.inflateSync(body);
-		} else if (info.info.headers['content-encoding'] === 'identity') {
+		} else if (contentEncoding === 'identity') {
 			// nothing
 		} else {
 			// nothing
 		}
 
-		if (info.info.headers['content-type'].includes('text/xml') || forceXmlBeautifyEnabled) {
-			print('body: ' + xmlBeautify(body.toString('utf8')));
-		} else if (info.info.headers['content-type'].includes('text/json')) {
-			print('body: ' + JSON.stringify(body.toString('utf8'), null, 2));
+		// const contentType = info.info.headers['content-type'] || '';
+		if (contentType.includes('text/xml') || forceXmlBeautifyEnabled) {
+			totalStr += xmlBeautify(body.toString('utf8'));
+		} else if (contentType.includes('text/json')) {
+			totalStr += JSON.stringify(body.toString('utf8'), null, 2);
 		} else {
-			print('body: ' + body.toString('utf8'));
+			totalStr += body.toString('utf8');
 		}
 	}
+
+	print(totalStr);
 }
 
 const relayServer = net.createServer();
