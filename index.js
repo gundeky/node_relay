@@ -2,6 +2,7 @@ const fs = require('fs');
 const net = require('net');
 const zlib = require('zlib');
 const HTTPParser = require('./httpparser').HTTPParser;
+const xmlBeautify = require('xml-beautifier');
 
 const listenPort = 8081;
 // const toAddr = { host: 'localhost', port: 8080, tls: false };
@@ -66,7 +67,14 @@ function printMessage(info) {
 		} else {
 			// nothing
 		}
-		print('body: ' + JSON.stringify(body.toString('utf8'), null, 2));
+
+		if (info.info.headers['content-type'].includes('text/xml')) {
+			print('body: ' + xmlBeautify(body.toString('utf8')));
+		} else if (info.info.headers['content-type'].includes('text/json')) {
+			print('body: ' + JSON.stringify(body.toString('utf8'), null, 2));
+		} else {
+			print('body: ' + body.toString('utf8'));
+		}
 	}
 }
 
