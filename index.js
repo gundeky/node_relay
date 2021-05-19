@@ -1,7 +1,7 @@
 const fs = require('fs');
 const net = require('net');
 const zlib = require('zlib');
-const HTTPParser = require('./httpparser').HTTPParser;
+const HTTPParser = require('http-parser-js').HTTPParser;
 const xmlBeautify = require('xml-beautifier');
 
 const listenPort = 8081;

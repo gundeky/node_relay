@@ -18,6 +18,7 @@
   },
   "homepage": "https://github.com/gundeky/node_relay#readme",
   "dependencies": {
+    "http-parser-js": "^0.5.3",
     "xml-beautifier": "^0.5.0"
   }
 }
